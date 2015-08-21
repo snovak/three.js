@@ -50,6 +50,10 @@ THREE.OrbitControls = function ( object, domElement ) {
 	// Set to true to disable this control
 	this.noRotate = false;
 	this.rotateSpeed = 1.0;
+	
+	// Disabled by default
+	this.tiltEnabled = false;
+	this.tiltSpeed = 0.01;  // you might want an multiplier for iOS
 
 	// Set to true to disable this control
 	this.noPan = false;
@@ -361,6 +365,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 			state = STATE.ROTATE;
 
 			rotateStart.set( event.clientX, event.clientY );
+			
 
 		} else if ( event.button === scope.mouseButtons.ZOOM ) {
 			if ( scope.noZoom === true ) return;
@@ -396,6 +401,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		if ( state === STATE.ROTATE ) {
 
+
 			if ( scope.noRotate === true ) return;
 
 			rotateEnd.set( event.clientX, event.clientY );
@@ -406,6 +412,9 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 			// rotating up and down along whole screen attempts to go 360, but limited to 180
 			scope.rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed );
+
+//			console.log("X: " + rotateDelta.x)
+//			console.log("y: " + rotateDelta.y)
 
 			rotateStart.copy( rotateEnd );
 
@@ -654,6 +663,56 @@ THREE.OrbitControls = function ( object, domElement ) {
 		state = STATE.NONE;
 
 	}
+	
+	/**
+	 * Tilt function
+	 * 
+	 * For mobile, uses orientation sensors to orbit target object. Only supports
+	 * orbit.  Pan and zoom may come later.  Ping me if of interest @ novak.us 
+	 * 
+	 * @param event 
+	 * 
+	 * @Performance: I have found that devicemotion event is a little faster 
+	 * likely because the delta is part of the device event object and doesn't 
+	 * have to be calculated here.  Though, I find that the deviceorientation 
+	 * event is more common.
+	 */
+	function tilt(event){	
+		
+//		var start, end, time;
+				
+		switch(event.type) {
+		
+			case "deviceorientation" :
+//				start = new Date().getTime();
+				rotateEnd.set( event.gamma, event.beta );
+				rotateDelta.subVectors( rotateEnd, rotateStart );
+				
+				scope.rotateLeft( rotateDelta.x * scope.tiltSpeed);	
+				scope.rotateUp( rotateDelta.y * scope.tiltSpeed);
+				
+				rotateStart.copy( rotateEnd );
+				
+				scope.update();
+//				end = new Date().getTime();
+//				time =  end - start;
+//				console.log("deviceorientation: " + time)
+			break;
+			case "devicemotion" :
+//				start = new Date().getTime()
+		    	scope.rotateLeft(event.rotationRate.beta * scope.tiltSpeed) ;
+		    	scope.rotateUp(event.rotationRate.alpha * scope.tiltSpeed) ;
+		        
+		    	scope.update();
+//				end = new Date().getTime();
+//				time =  end - start;
+//				console.log("devicemotion: " + time)
+			break;
+		
+		}
+
+	} //tilt
+	
 
 	this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
 	this.domElement.addEventListener( 'mousedown', onMouseDown, false );
@@ -665,6 +724,16 @@ THREE.OrbitControls = function ( object, domElement ) {
 	this.domElement.addEventListener( 'touchmove', touchmove, false );
 
 	window.addEventListener( 'keydown', onKeyDown, false );
+		
+	if (window.DeviceOrientationEvent ) {  
+		
+	    window.addEventListener("deviceorientation", tilt, false);
+	    
+	} else if ( window.DeviceMotionEvent ) {
+		
+	    window.addEventListener('devicemotion', tilt, false);
+	    
+	} 
 
 	// force an update at start
 	this.update();
