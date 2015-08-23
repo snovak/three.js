@@ -1,5 +1,3 @@
-
-
 THREE.TiltControls = function( object ){
 
 	

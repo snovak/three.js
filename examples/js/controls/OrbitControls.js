@@ -432,7 +432,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		if ( state === STATE.ROTATE ) {
 
-
 			if ( scope.noRotate === true ) return;
 
 			rotateEnd.set( event.clientX, event.clientY );
@@ -444,8 +443,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 			// rotating up and down along whole screen attempts to go 360, but limited to 180
 			scope.rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed );
 
-//			console.log("X: " + rotateDelta.x)
-//			console.log("y: " + rotateDelta.y)
 
 			rotateStart.copy( rotateEnd );
 
@@ -699,7 +696,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 	 * Tilt function
 	 * 
 	 * For mobile, uses orientation sensors to orbit target object. Only supports
-	 * orbit.  Pan and zoom may come later.  Ping me if of interest @ novak.us 
+	 * orbit.  Pan and zoom may come later.  Ping me if of interest sean @ novak.us 
 	 * 
 	 * @param event 
 	 * 
@@ -709,13 +706,11 @@ THREE.OrbitControls = function ( object, domElement ) {
 	 * event is more common.
 	 */
 	function tilt(event){	
-		
-//		var start, end, time;
 				
 		switch(event.type) {
 		
 			case "deviceorientation" :
-//				start = new Date().getTime();
+
 				rotateEnd.set( event.gamma, event.beta );
 				rotateDelta.subVectors( rotateEnd, rotateStart );
 				
@@ -725,19 +720,15 @@ THREE.OrbitControls = function ( object, domElement ) {
 				rotateStart.copy( rotateEnd );
 				
 				scope.update();
-//				end = new Date().getTime();
-//				time =  end - start;
-//				console.log("deviceorientation: " + time)
+
 			break;
 			case "devicemotion" :
-//				start = new Date().getTime()
+
 		    	scope.rotateLeft(event.rotationRate.beta * scope.tiltSpeed) ;
 		    	scope.rotateUp(event.rotationRate.alpha * scope.tiltSpeed) ;
 		        
 		    	scope.update();
-//				end = new Date().getTime();
-//				time =  end - start;
-//				console.log("devicemotion: " + time)
+
 			break;
 		
 		}
